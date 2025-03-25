@@ -4,10 +4,8 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(cookieParser("Hello world"));
-
 app.use(express.json());
-
+app.use(cookieParser("safal"));
 app.use(appRouter);
 // Registering router in our index.js file
 
@@ -44,7 +42,7 @@ app.get(
     next();
   },
   (req, res) => {
-    res.cookie("id", "123", { maxAge: 10000, signed: true });
+    res.cookie("Hello", "World", { maxAge: 60000,signed:true });
     res.json({ msg: "Hello World!" });
   }
 );
