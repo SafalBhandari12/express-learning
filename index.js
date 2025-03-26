@@ -2,6 +2,10 @@ import express, { json } from "express";
 import appRouter from "./src/routes/appRouter.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+// Validationresult was added to perform validation on various api end points
+import { body, query, validationResult } from "express-validator";
+// Mock users were imported to 
+import { mockUsers } from "./src/utils/constants.js";
 
 const app = express();
 
@@ -64,7 +68,57 @@ app.get(
     res.json({ msg: "Hello World!" });
   }
 );
+// We use session to authenticate the user. When the user enters the authentication details then the session id and cookie is stored in the client side and authentication detail is stored in the server side.
+// Now whenever the request is made from the frontend that cookie and session id is attached. From which the server can track if the user is authenticated. 
+// There can exist the multiple session and cookie which are stored in the shared storage. But exist independently. So, multiple session can exist at the same time
+app.post(
+  "/api/auth",
+  body("username").notEmpty().withMessage("The username cannot be empty"),
+  body("password").notEmpty().withMessage("The password cannot be empty"),
+  (req, res) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res.status(400).json({ error: error.array() });
+    }
+    const { username, password } = req.body;
 
+    const findUser = mockUsers.find((user) => user.username == username);
+
+    if (!findUser || findUser.password !== password) {
+      return res.status(401).send({ msg: "Invalid Credentials" });
+    }
+    req.session.user = findUser;
+    return res.status(200).send(findUser);
+  }
+);
+
+app.get("/api/auth/status", (req, res) => {
+  console.log(req.sessionStore);
+  req.sessionStore.get(req.sessionID, (err, session) => {
+    console.log(session);
+  });
+
+  return req.session.user
+    ? res.status(200).send(req.session.user)
+    : res.status(401).send({ msg: "BAD CREDENTIALS" });
+});
+
+app.post("/api/cart", (req, res) => {
+  if (!req.session.user) return res.sendStatus(401);
+  const { body: item } = req;
+  const { cart } = req.session;
+  if (cart) {
+    cart.push(item);
+  } else {
+    req.session.cart = [item];
+  }
+  return res.status(201).send(item);
+});
+
+app.get("/api/cart", (req, res) => {
+  if (!req.session.user) return res.sendStatus(401);
+  return res.send(req.session.cart ?? []);
+});
 // GET Request: Users with optional filtering
 
 // GET Request: Products
