@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { query, validationResult, body, matchedData } from "express-validator";
 import { mockUsers } from "../utils/constants.js";
+import session from "express-session";
 
 const router = Router();
 
@@ -21,6 +22,17 @@ router.get(
     .withMessage("Must not be empty"),
   (req, res) => {
     const { filter, value } = req.query;
+    // We are just checking wheather the session id is same or not for the different end points.
+    console.log(req.session);
+    console.log(req.session.id);
+    // Normally the session data is stored in the memory. But it can cause the problem. Bcz during the time of power outage or memory reboot whole data could be wiped so we use session store.
+    req.sessionStore.get(req.session.id, (err, sessionData) => {
+      if (err) {
+        console.log(err);
+        throw err;
+      }
+      console.log(sessionData);
+    });
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });

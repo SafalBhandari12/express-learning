@@ -1,11 +1,24 @@
 import express, { json } from "express";
 import appRouter from "./src/routes/appRouter.js";
 import cookieParser from "cookie-parser";
+import session from "express-session";
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser("safal"));
+// secret: it adds the security. saveUninitialized: it is set to false meanaing if the user visits the page and there is no change in the session object then it is not saved. reshave is false meaning that if the user logs in change something but the session object is not changed then it is not stored in the session store.
+app.use(
+  session({
+    secret: "anson the dev",
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60,
+    },
+  })
+);
+
 app.use(appRouter);
 // Registering router in our index.js file
 
@@ -42,7 +55,12 @@ app.get(
     next();
   },
   (req, res) => {
-    res.cookie("Hello", "World", { maxAge: 60000,signed:true });
+    // We are just logging the session and the session id.
+    // Visisted true helps us to track the user. If visited true is not made then when ever the user moves from one end point to another session id is changed. But if it is true then for the same user the session id remain the same making it easier to track the user.
+    console.log(req.session);
+    console.log(req.session.id);
+    req.session.visited = true;
+    res.cookie("Hello", "World", { maxAge: 60000, signed: true });
     res.json({ msg: "Hello World!" });
   }
 );
