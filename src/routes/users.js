@@ -7,6 +7,8 @@ import { mockUsers } from "../utils/constants.js";
 import session from "express-session";
 // Importing the Mongoose User model for database operations
 import { User } from "../mongoose/schemas/user.js";
+// Importing password hashing helper function
+import { hashPassword } from "../utils/helpers.js";
 
 // Create a new router instance
 const router = Router();
@@ -38,6 +40,9 @@ router.post(
 
     // Destructure the request body (assumed to contain user data)
     const { body } = req;
+    // Hash the password before storing in the database
+    body.password = hashPassword(body.password);
+    console.log(body);
     // Create a new Mongoose User instance with the provided data
     const newUser = new User(body);
     try {

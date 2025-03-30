@@ -10,6 +10,8 @@ import { mockUsers } from "../src/utils/constants.js";
 import passport from "passport";
 // Import the Mongoose User model for database authentication.
 import { User } from "../src/mongoose/schemas/user.js";
+// Import password comparison helper function.
+import { comparePassword } from "../src/utils/helpers.js";
 
 // -------------------------
 // Passport Session Handling
@@ -53,8 +55,9 @@ export default passport.use(
       // Find the user in the MongoDB database by username.
       const findUser = await User.findOne({ username });
       if (!findUser) throw new Error("User not found");
-      // Check if the provided password matches the stored password.
-      if (findUser.password !== password) throw new Error("Bad Credential");
+      // Compare the provided password with the stored hashed password.
+      if (!comparePassword(password, findUser.password))
+        throw new Error("Bad Credential");
 
       // If successful, pass the found user to Passport.
       done(null, findUser);
