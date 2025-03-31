@@ -58,6 +58,19 @@ router.post(
   }
 );
 
+router.get("/api/users", (req, res) => {
+  console.log(req.session.id);
+  req.sessionStore.get(req.session.id, (err, sessionData) => {
+    if (err) {
+      console.log(err);
+      throw err;
+    }
+    console.log("Inside session store");
+    console.log(sessionData);
+    return res.send(200);
+  });
+});
+
 // -------------------------
 // Middleware: resolveIndexByUser
 // -------------------------

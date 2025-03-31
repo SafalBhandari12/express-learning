@@ -21,6 +21,9 @@ import mongoose from "mongoose";
 // Import the local strategy configuration for Passport.
 import localStrategy from "./strategies/local-strategy.js";
 
+// NEW: Import MongoStore to use MongoDB as the session store.
+import MongoStore from "connect-mongo";
+
 // Initialize the Express application.
 const app = express();
 
@@ -56,6 +59,10 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60, // set cookie expiration to 1 hour
     },
+    // NEW: Configure session store to use MongoDB as storage using connect-mongo.
+    store: MongoStore.create({
+      client: mongoose.connection.getClient(),
+    }),
   })
 );
 
